@@ -36,6 +36,5 @@ name=John Doe|age=30|email=john@example.com
 Clone the repository:
 Shellgit clone https://github.com/Linu-ChatGPT/text-json-toon-converter.gitShow more lines
 Open index.html in your browser.
-https://github.com/Linu-ChatGPT/Text-to-JSON-TOON-Convertor
 ✅ License
 This project is licensed under the MIT License.
