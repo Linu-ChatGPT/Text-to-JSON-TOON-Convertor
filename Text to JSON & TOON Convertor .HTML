@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text to JSON & TOON Converter</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</style>
+
+<style>
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: #222;
+    color: #eee;
+}
+body.dark-mode .card {
+    background-color: #333;
+    color: #eee;
+    border-color: #555;
+}
+body.dark-mode .btn {
+    border-color: #888;
+}
+body.dark-mode textarea.form-control {
+    background-color: #333;
+    color: #eee;
+    border-color: #555;
+}
+body.dark-mode #dropZone {
+    border-color: #666;
+    background-color: #444;
+    color: #eee;
+}
+body.dark-mode h1,
+body.dark-mode .card-header {
+    color: #fff;
+}
+body.dark-mode #errorMsg {
+    color: #ff6b6b;
+}
+body.dark-mode #successMsg {
+    color: #4caf50;
+}
+</style>
+
+</head>
+<body class="container py-4">
+<h1 class="mb-4 text-center"><span style="color: #FF3357;">Text to JSON & TOON Converter</span></h1>
+
+<div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="darkModeSwitch" onchange="toggleDarkMode()">
+<label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+</div>
+
+<div id="dropZone" class="mb-3">
+<div style="background-color: #FFFFE0; padding: 10px; border: 1px solid #ccc;">
+    <span style="color: red;"><b><P>":" & "," </b> </span> <span style="color: blue;">"are the delimiters for input text for conversion".</P></span>
+    
+    <span style="color: blue;"><b>Instruction: For Text to Json or Toon follow the Sample Text File Format - <b/></span> 
+    <span> 
+        <span style="color: #8D33FF;"><B>Name</b> </span> 
+        <span style="color: red;"><B>:</B></span> 
+        <span style="color: #8D33FF;">John Doe </span> 
+        <span style="color: red;"><B>,</B></span>
+    </span>
+</div>
+
+
+</div>
+<div id="errorMsg"></div>
+<div id="successMsg"></div>
+
+<textarea id="inputText" class="form-control mb-3" placeholder="Enter text or use voice input"></textarea>
+<button class="btn btn-outline-info mb-3" onclick="startVoiceInput()">🎤 Start Voice Input</button>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+<button class="btn btn-primary" onclick="textToJSON()">Text → JSON</button>
+<button class="btn btn-secondary" onclick="textToTOON()">Text → TOON</button>
+<button class="btn btn-info" onclick="jsonToTOON()">JSON → TOON</button>
+<button class="btn btn-warning" onclick="toonToJSON()">TOON → JSON</button>
+<button class="btn btn-dark" onclick="autoConvert()">Auto Detect & Convert</button>
+<button class="btn btn-success" onclick="downloadJSON()">Download JSON</button>
+<button class="btn btn-success" onclick="downloadTOON()">Download TOON</button>
+<button class="btn btn-danger" onclick="confirmClear()">Clear</button>
+</div>
+
+<div class="row">
+<div class="col-md-6 mb-3">
+<div class="card"><div class="card-header">JSON Output</div><div class="card-body"><pre id="jsonOutput"></pre></div></div>
+</div>
+<div class="col-md-6 mb-3">
+<div class="card"><div class="card-header">TOON Output</div><div class="card-body"><pre id="toonOutput"></pre></div></div>
+</div>
+</div>
+
+<script>
+function showError(msg){document.getElementById('errorMsg').textContent=msg;document.getElementById('successMsg').textContent='';}
+function showSuccess(msg){document.getElementById('successMsg').textContent=msg;document.getElementById('errorMsg').textContent='';}
+function clearError(){document.getElementById('errorMsg').textContent='';document.getElementById('successMsg').textContent='';}
+function confirmClear(){if(confirm('Are you sure you want to clear all fields?')){clearScreen();}}
+function clearScreen(){document.getElementById('inputText').value='';document.getElementById('jsonOutput').textContent='';document.getElementById('toonOutput').textContent='';clearError();}
+function toggleDarkMode(){document.body.classList.toggle('dark-mode');}
+
+function textToJSON(){
+    clearError();
+    let text=document.getElementById('inputText').value.trim();
+    if(!text){showError('Please enter text');return;}
+    text=text.replace(/\s*:\s*/g,':').replace(/\s*\n\s*/g,'\n');
+    const obj={};
+    try{
+        text.split(/\n|,/).forEach(pair=>{
+            if(!pair.trim())return;
+            const [key,value]=pair.split(':').map(s=>s.trim());
+            if(!key||!value)throw 'Invalid format';
+            obj[key]=value;
+        });
+        document.getElementById('jsonOutput').textContent=JSON.stringify(obj,null,2);
+        showSuccess('Converted to JSON successfully!');
+    }catch(e){showError('Error converting text to JSON: '+e);}
+}
+
+function textToTOON(){
+    clearError();
+    let text=document.getElementById('inputText').value.trim();
+    if(!text){showError('Please enter text');return;}
+    text=text.replace(/\s*:\s*/g,':').replace(/\s*\n\s*/g,'\n');
+    try{
+        const toon=text.split(/\n|,/).map(pair=>{
+            if(!pair.trim())return '';
+            const [key,value]=pair.split(':').map(s=>s.trim());
+            if(!key||!value)throw 'Invalid format';
+            return `${key}=${value}`;
+        }).filter(Boolean).join('|');
+        document.getElementById('toonOutput').textContent=toon;
+        showSuccess('Converted to TOON successfully!');
+    }catch(e){showError('Error converting text to TOON: '+e);}
+}
+
+function jsonToTOON(){
+    clearError();
+    try{
+        const obj=JSON.parse(document.getElementById('inputText').value);
+        const toon=Object.entries(obj).map(([k,v])=>`${k}=${v}`).join('|');
+        document.getElementById('toonOutput').textContent=toon;
+        showSuccess('Converted JSON to TOON successfully!');
+    }catch(e){showError('Invalid JSON format');}
+}
+
+function toonToJSON(){
+    clearError();
+    const text=document.getElementById('inputText').value.trim();
+    if(!text){showError('Please enter TOON text');return;}
+    const obj={};
+    try{
+        text.split('|').forEach(pair=>{
+            if(!pair.trim())return;
+            const [key,value]=pair.split('=').map(s=>s.trim());
+            if(!key||!value)throw 'Invalid TOON format';
+            obj[key]=value;
+        });
+        document.getElementById('jsonOutput').textContent=JSON.stringify(obj,null,2);
+        showSuccess('Converted TOON to JSON successfully!');
+    }catch(e){showError('Error converting TOON to JSON: '+e);}
+}
+
+function smartConvert(){
+    clearError();
+    const text=document.getElementById('inputText').value.trim();
+    if(!text){showError('Please enter text');return;}
+    const doc=nlp(text);
+    const sentences=doc.sentences().out('array');
+    const obj={summary:sentences[0],details:sentences.slice(1)};
+    if(/barcode/i.test(text))obj.barcodeType='2D';
+    if(/not identified|not readable/i.test(text))obj.status='not identified';
+    if(/manual effort/i.test(text))obj.action='manual check required';
+    if(/capability/i.test(text))obj.capability='missing';
+    const dates=doc.dates().out('array');if(dates.length>0)obj.dates=dates;
+    const numbers=doc.numbers().out('array');if(numbers.length>0)obj.numbers=numbers;
+    const names=doc.people().out('array');if(names.length>0)obj.names=names;
+    const locations=doc.places().out('array');if(locations.length>0)obj.locations=locations;
+    const emailMatches=text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);if(emailMatches)obj.emails=emailMatches;
+    const urlMatches=text.match(/https?:\/\/[a-zA-Z0-9./?=_-]+/g);if(urlMatches)obj.urls=urlMatches;
+    const phoneMatches=text.match(/\+?[0-9]{1,3}?[\s.-]?\(?[0-9]{1,4}\)?[\s.-]?[0-9]{1,4}[\s.-]?[0-9]{1,9}/g);if(phoneMatches)obj.phoneNumbers=phoneMatches;
+    const currencyMatches=text.match(/(?:USD|EUR|INR|GBP|\$|€|£)\s?[0-9]+(?:\.[0-9]{1,2})?/g);if(currencyMatches)obj.currencyValues=currencyMatches;
+    document.getElementById('jsonOutput').textContent=JSON.stringify(obj,null,2);
+    const toon=Object.entries(obj).map(([k,v])=>{
+        if(Array.isArray(v))return v.map(val=>`${k}=${val}`).join('|');
+        return `${k}=${v}`;
+    }).join('|');
+    document.getElementById('toonOutput').textContent=toon;
+    showSuccess('Smart conversion completed!');
+}
+
+function autoConvert(){
+    clearError();
+    const text=document.getElementById('inputText').value.trim();
+    if(!text){showError('Please enter text');return;}
+    try{
+        if(text.startsWith('{') && text.endsWith('}')){
+            const obj=JSON.parse(text);
+            document.getElementById('jsonOutput').textContent=JSON.stringify(obj,null,2);
+            const toon=Object.entries(obj).map(([k,v])=>`${k}=${v}`).join('|');
+            document.getElementById('toonOutput').textContent=toon;
+            showSuccess('Detected JSON → Converted to TOON and JSON!');
+        }
+        else if(text.includes('=') && text.includes('|')){
+            const obj={};
+            text.split('|').forEach(pair=>{
+                if(!pair.trim())return;
+                const [key,value]=pair.split('=').map(s=>s.trim());
+                if(!key||!value)throw 'Invalid TOON format';
+                obj[key]=value;
+            });
+            document.getElementById('jsonOutput').textContent=JSON.stringify(obj,null,2);
+            document.getElementById('toonOutput').textContent=text;
+            showSuccess('Detected TOON → Converted to JSON and TOON!');
+        }
+        else{
+            const obj={};
+            text.split(/\n|,/).forEach(pair=>{
+                if(!pair.trim())return;
+                const [key,value]=pair.split(':').map(s=>s.trim());
+                if(!key||!value)throw 'Invalid format';
+                obj[key]=value;
+            });
+            document.getElementById('jsonOutput').textContent=JSON.stringify(obj,null,2);
+            const toon=Object.entries(obj).map(([k,v])=>`${k}=${v}`).join('|');
+            document.getElementById('toonOutput').textContent=toon;
+            showSuccess('Detected Plain Text → Converted to JSON and TOON!');
+        }
+    }catch(e){showError('Auto conversion failed: '+e);}
+}
+
+function startVoiceInput(){
+    clearError();
+    if(!('webkitSpeechRecognition' in window)){showError('Voice input not supported');return;}
+    const recognition=new webkitSpeechRecognition();
+    recognition.lang='en-US';
+    recognition.interimResults=false;
+    recognition.maxAlternatives=1;
+    recognition.start();
+    recognition.onresult=function(event){
+        const transcript=event.results[0][0].transcript;
+        document.getElementById('inputText').value=transcript;
+    };
+    recognition.onerror=function(){showError('Voice input error');};
+}
+
+function downloadJSON(){
+    const data=document.getElementById('jsonOutput').textContent;
+    if(!data){showError('No JSON data to download');return;}
+    const blob=new Blob([data],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='output.json';a.click();
+}
+
+function downloadTOON(){
+    const data=document.getElementById('toonOutput').textContent;
+    if(!data){showError('No TOON data to download');return;}
+    const blob=new Blob([data],{type:'text/plain'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='output.toon.txt';a.click();
+}
+
+const dropZone=document.getElementById('dropZone');
+dropZone.addEventListener('dragover',(e)=>{e.preventDefault();dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave',()=>{dropZone.classList.remove('dragover');});
+dropZone.addEventListener('drop',(e)=>{
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file=e.dataTransfer.files[0];
+    const reader=new FileReader();
+    reader.onload=function(event){document.getElementById('inputText').value=event.target.result;};
+    reader.readAsText(file);
+});
+</script>
+
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+</script>
+
+</body>
+</html>
