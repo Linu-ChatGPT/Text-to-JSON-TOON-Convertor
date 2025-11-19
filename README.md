@@ -36,5 +36,6 @@ name=John Doe|age=30|email=john@example.com
 Clone the repository:
 Shellgit clone https://github.com/Linu-ChatGPT/text-json-toon-converter.gitShow more lines
 Open index.html in your browser.
+
 ✅ License
 Feel Free to add your content
