@@ -1,6 +1,6 @@
 Text to JSON & TOON Converter
-✅ Features
 
+✅ Features
 Text → JSON / TOON using key:value pairs
 JSON ↔ TOON conversion
 Smart Convert for extracting structured data from unstructured text
@@ -37,4 +37,4 @@ Clone the repository:
 Shellgit clone https://github.com/Linu-ChatGPT/text-json-toon-converter.gitShow more lines
 Open index.html in your browser.
 ✅ License
-This project is licensed under the MIT License.
+Feel Free to add your content
